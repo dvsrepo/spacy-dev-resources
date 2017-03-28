@@ -1,1 +1,2 @@
-python training/word_freqs_new_language.py ~/files.txt ~/out/ ~/word_freqs.txt es
+#!/usr/bin/python
+python training/word_freqs_new_language.py files.txt out/ word_freqs.txt es
