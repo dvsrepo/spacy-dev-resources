@@ -3,7 +3,9 @@
 from __future__ import unicode_literals, print_function
 
 import plac
+import multiprocessing
 import joblib
+import time
 from os import path
 import os
 import bz2
@@ -20,7 +22,9 @@ from spacy.attrs import ORTH
 from spacy.tokenizer import Tokenizer
 from spacy.vocab import Vocab
 
-import madoka
+#import madoka
+
+DEFAULT_CORES = multiprocessing.cpu_count()
 
 def iter_comments(loc):
     with io.open(loc, 'r') as file_:
@@ -47,6 +51,7 @@ def merge_counts(locs, out_loc):
             file_.write('%d\t%d\t%s\n' % (count, counts_docs[orth], string))
 
 def count_freqs(input_loc, output_loc, LangClass):
+    start = time.time()
     print('INFO: Processing ', input_loc)
     vocab = LangClass.Defaults.create_vocab()
     tokenizer = LangClass.Defaults.create_tokenizer()
@@ -62,6 +67,8 @@ def count_freqs(input_loc, output_loc, LangClass):
             string = tokenizer.vocab.strings[orth]
             if not string.isspace():
                 file_.write('%d\t%s\n' % (freq, string))
+    end = time.time()-start
+    print('INFO: File {} took {} min '.format(input_loc, end/60))
 
 @plac.annotations(
     input_loc=("Location of input file list"),
@@ -71,7 +78,7 @@ def count_freqs(input_loc, output_loc, LangClass):
     n_jobs=("Number of workers", "option", "n", int),
     skip_existing=("Skip inputs where an output file exists", "flag", "s", bool),
 )
-def main(input_loc, freqs_dir, output_loc, lang_name='en', n_jobs=8, skip_existing=False):
+def main(input_loc, freqs_dir, output_loc, lang_name='en', n_jobs=DEFAULT_CORES, skip_existing=False):
     tasks = []
     outputs = []
 
